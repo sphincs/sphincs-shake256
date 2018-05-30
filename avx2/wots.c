@@ -14,7 +14,14 @@ static void expand_seed(unsigned char outseeds[WOTS_L*HASH_BYTES], const unsigne
 
 
 //XXX: optimize this one!
-extern void genfullchain8x(unsigned char *, const unsigned char *);
+static void genfullchain8x(unsigned char *x, const unsigned char *masks)
+{
+  int i;
+
+  for(i=0; i < WOTS_W-1; i++)
+    hash_n_n_mask_8x(x, x, masks+(i*HASH_BYTES));
+}
+
 static void gen_fullchains(unsigned char x[WOTS_L*HASH_BYTES], const unsigned char masks[(WOTS_W-1)*HASH_BYTES])
 {
   int i, j;

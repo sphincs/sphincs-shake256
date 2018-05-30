@@ -1,46 +1,24 @@
 #include "params.h"
 #include "permute.h"
-
-#include "crypto_hash_blake256.h"
-#include "crypto_hash_blake512.h"
+#include "fips202.h"
 
 #include <stddef.h>
 
 int varlen_hash(unsigned char *out,const unsigned char *in,unsigned long long inlen)
 {
-  crypto_hash_blake256(out,in,inlen);
+  shake256(out, 32, in, inlen);
   return 0;
 }
 
 int msg_hash(unsigned char *out,const unsigned char *in,unsigned long long inlen)
 {
-  crypto_hash_blake512(out,in,inlen);
+  shake256(out, 64, in, inlen);
   return 0;
 }
 
-
-static const char *hashc = "expand 32-byte to 64-byte state!";
-
 int hash_2n_n(unsigned char *out,const unsigned char *in)
 {
-#if HASH_BYTES != 32
-#error "Current code only supports 32-byte hashes"
-#endif
-
-  unsigned char x[64];
-  int i;
-  for(i=0;i<32;i++)
-  {
-    x[i]    = in[i];
-    x[i+32] = hashc[i];
-  }
-  chacha_permute(x,x);
-  for(i=0;i<32;i++)
-    x[i] = x[i] ^ in[i+32];
-  chacha_permute(x,x);
-  for(i=0;i<32;i++)
-    out[i] = x[i];
-
+  shake256(out, HASH_BYTES, in, 2*HASH_BYTES);
   return 0;
 }
 
@@ -55,22 +33,7 @@ int hash_2n_n_mask(unsigned char *out,const unsigned char *in, const unsigned ch
 
 int hash_n_n(unsigned char *out,const unsigned char *in)
 {
-#if HASH_BYTES != 32
-#error "Current code only supports 32-byte hashes"
-#endif
-
-  unsigned char x[64];
-  int i;
-
-  for(i=0;i<32;i++)
-  {
-    x[i]    = in[i];
-    x[i+32] = hashc[i];
-  }
-  chacha_permute(x,x);
-  for(i=0;i<32;i++)
-    out[i] = x[i];
-  
+  shake256(out, HASH_BYTES, in, HASH_BYTES);
   return 0;
 }
 

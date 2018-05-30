@@ -9,7 +9,7 @@
 #include "wots.h"
 #include "horst.h"
 #include "hash.h"
-#include "crypto_hash_blake512.h"
+#include "fips202.h"
 
 #define BIGINT_BYTES ((TOTALTREE_HEIGHT-SUBTREE_HEIGHT+7)/8)
 
@@ -263,7 +263,7 @@ int crypto_sign(unsigned char *sm,unsigned long long *smlen, const unsigned char
     // Copy secret random seed to scratch
     memcpy(scratch, tsk + CRYPTO_SECRETKEYBYTES - SK_RAND_SEED_BYTES, SK_RAND_SEED_BYTES);
 
-    crypto_hash_blake512((unsigned char*)rnd, scratch, SK_RAND_SEED_BYTES + mlen); //XXX: Why Blake 512?
+    shake256((unsigned char*)rnd, 64, scratch, SK_RAND_SEED_BYTES + mlen);
 
     // wipe sk
     zerobytes(scratch,SK_RAND_SEED_BYTES);
