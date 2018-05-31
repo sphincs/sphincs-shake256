@@ -68,8 +68,8 @@ static void l_tree(unsigned char *leaf, unsigned char *wots_pk, const unsigned c
   for(i=0;i<WOTS_LOG_L;i++)
   {
     j = 0;
-    for(;j+8 < (l>>1);j+=8)
-      hash_2n_n_mask_8x(wots_pk+j*HASH_BYTES,wots_pk+j*2*HASH_BYTES, HASH_BYTES, 2*HASH_BYTES, masks+i*2*HASH_BYTES);
+    for(;j+4 < (l>>1);j+=4)
+      hash_2n_n_mask_4x(wots_pk+j*HASH_BYTES,wots_pk+j*2*HASH_BYTES, HASH_BYTES, 2*HASH_BYTES, masks+i*2*HASH_BYTES);
 
     for(;j < (l>>1);j++)
       hash_2n_n_mask(wots_pk+j*HASH_BYTES,wots_pk+j*2*HASH_BYTES, masks+i*2*HASH_BYTES);
@@ -86,7 +86,7 @@ static void l_tree(unsigned char *leaf, unsigned char *wots_pk, const unsigned c
 }
 
 
-static void l_tree_8x(unsigned char *leaf, unsigned char *wots_pk, const unsigned char *masks)
+static void l_tree_4x(unsigned char *leaf, unsigned char *wots_pk, const unsigned char *masks)
 {
   int l = WOTS_L;
   int i,j,k = 0;
@@ -94,12 +94,12 @@ static void l_tree_8x(unsigned char *leaf, unsigned char *wots_pk, const unsigne
   for(i=0;i<WOTS_LOG_L;i++)
   {
     for(j = 0;j < (l>>1);j++)
-      hash_2n_n_mask_8x(wots_pk+j*HASH_BYTES, wots_pk+j*2*HASH_BYTES, 
+      hash_2n_n_mask_4x(wots_pk+j*HASH_BYTES, wots_pk+j*2*HASH_BYTES, 
           WOTS_L*HASH_BYTES, WOTS_L*HASH_BYTES,
           masks+i*2*HASH_BYTES);
     if(l&1)
     {
-      for (k = 0; k < 8; k++)
+      for (k = 0; k < 4; k++)
         memcpy(wots_pk+(l>>1)*HASH_BYTES + k*WOTS_L*HASH_BYTES,
             wots_pk+(l -1)*HASH_BYTES + k*WOTS_L*HASH_BYTES, HASH_BYTES);
       l=(l>>1)+1;
@@ -107,7 +107,7 @@ static void l_tree_8x(unsigned char *leaf, unsigned char *wots_pk, const unsigne
       l=(l>>1);
     }
   }
-  for (k = 0; k < 8; k++)
+  for (k = 0; k < 4; k++)
     memcpy(leaf + k*HASH_BYTES, wots_pk + k*WOTS_L*HASH_BYTES, HASH_BYTES);
 }
 
@@ -214,8 +214,8 @@ static void compute_authpath_wots(unsigned char root[HASH_BYTES], unsigned char 
   for(ta.subleaf = 0; ta.subleaf < (1<<SUBTREE_HEIGHT); ta.subleaf++)
     wots_pkgen(pk + ta.subleaf * WOTS_L*HASH_BYTES, seed + ta.subleaf * SEED_BYTES, masks);
 
-  for(ta.subleaf = 0; ta.subleaf < (1<<SUBTREE_HEIGHT); ta.subleaf+=8)
-    l_tree_8x(tree + (1<<SUBTREE_HEIGHT)*HASH_BYTES + ta.subleaf * HASH_BYTES,
+  for(ta.subleaf = 0; ta.subleaf < (1<<SUBTREE_HEIGHT); ta.subleaf+=4)
+    l_tree_4x(tree + (1<<SUBTREE_HEIGHT)*HASH_BYTES + ta.subleaf * HASH_BYTES,
         pk  + ta.subleaf * WOTS_L*HASH_BYTES, masks);
 
   int level = 0;

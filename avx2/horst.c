@@ -10,7 +10,7 @@ static void expand_seed(unsigned char outseeds[HORST_T*HORST_SKBYTES], const uns
   prg(outseeds, HORST_T*HORST_SKBYTES, inseed);
 }
 
-extern void loop_hash_2n_n_mask_8x(unsigned char *out,const unsigned char *in, unsigned long long distance, const unsigned char *mask);
+extern void loop_hash_2n_n_mask_4x(unsigned char *out,const unsigned char *in, unsigned long long distance, const unsigned char *mask);
 
 
 int horst_sign(unsigned char *sig, unsigned char pk[HASH_BYTES], unsigned long long *sigbytes, 
@@ -34,35 +34,35 @@ int horst_sign(unsigned char *sig, unsigned char pk[HASH_BYTES], unsigned long l
 #endif
 
   // Generate pk leaves
-  for(i=0;i<HORST_T;i+=8)
-    hash_n_n_8x(tree+(HORST_T-1+i)*HASH_BYTES, sk+i*HORST_SKBYTES);
+  for(i=0;i<HORST_T;i+=4)
+    hash_n_n_4x(tree+(HORST_T-1+i)*HASH_BYTES, sk+i*HORST_SKBYTES);
 
   // Hash from level 0 to 1
-  loop_hash_2n_n_mask_8x(tree+(32767)*HASH_BYTES,tree+(65535)*HASH_BYTES,8192*HASH_BYTES,masks);
+  loop_hash_2n_n_mask_4x(tree+(32767)*HASH_BYTES,tree+(65535)*HASH_BYTES,16384*HASH_BYTES,masks);
   // Hash from level 1 to 2
-  loop_hash_2n_n_mask_8x(tree+(16383)*HASH_BYTES,tree+(32767)*HASH_BYTES,4096*HASH_BYTES,masks+2*HASH_BYTES);
+  loop_hash_2n_n_mask_4x(tree+(16383)*HASH_BYTES,tree+(32767)*HASH_BYTES,8192*HASH_BYTES,masks+2*HASH_BYTES);
   // Hash from level 2 to 3
-  loop_hash_2n_n_mask_8x(tree+(8191)*HASH_BYTES,tree+(16383)*HASH_BYTES,2048*HASH_BYTES,masks+4*HASH_BYTES);
+  loop_hash_2n_n_mask_4x(tree+(8191)*HASH_BYTES,tree+(16383)*HASH_BYTES,4096*HASH_BYTES,masks+4*HASH_BYTES);
   // Hash from level 3 to 4
-  loop_hash_2n_n_mask_8x(tree+(4095)*HASH_BYTES,tree+(8191)*HASH_BYTES,1024*HASH_BYTES,masks+6*HASH_BYTES);
+  loop_hash_2n_n_mask_4x(tree+(4095)*HASH_BYTES,tree+(8191)*HASH_BYTES,2048*HASH_BYTES,masks+6*HASH_BYTES);
   // Hash from level 4 to 5
-  loop_hash_2n_n_mask_8x(tree+(2047)*HASH_BYTES,tree+(4095)*HASH_BYTES,512*HASH_BYTES,masks+8*HASH_BYTES);
+  loop_hash_2n_n_mask_4x(tree+(2047)*HASH_BYTES,tree+(4095)*HASH_BYTES,1024*HASH_BYTES,masks+8*HASH_BYTES);
   // Hash from level 5 to 6
-  loop_hash_2n_n_mask_8x(tree+(1023)*HASH_BYTES,tree+(2047)*HASH_BYTES,256*HASH_BYTES,masks+10*HASH_BYTES);
+  loop_hash_2n_n_mask_4x(tree+(1023)*HASH_BYTES,tree+(2047)*HASH_BYTES,512*HASH_BYTES,masks+10*HASH_BYTES);
   // Hash from level 6 to 7
-  loop_hash_2n_n_mask_8x(tree+(511)*HASH_BYTES,tree+(1023)*HASH_BYTES,128*HASH_BYTES,masks+12*HASH_BYTES);
+  loop_hash_2n_n_mask_4x(tree+(511)*HASH_BYTES,tree+(1023)*HASH_BYTES,256*HASH_BYTES,masks+12*HASH_BYTES);
   // Hash from level 7 to 8
-  loop_hash_2n_n_mask_8x(tree+(255)*HASH_BYTES,tree+(511)*HASH_BYTES,64*HASH_BYTES,masks+14*HASH_BYTES);
+  loop_hash_2n_n_mask_4x(tree+(255)*HASH_BYTES,tree+(511)*HASH_BYTES,128*HASH_BYTES,masks+14*HASH_BYTES);
   // Hash from level 8 to 9
-  loop_hash_2n_n_mask_8x(tree+(127)*HASH_BYTES,tree+(255)*HASH_BYTES,32*HASH_BYTES,masks+16*HASH_BYTES);
+  loop_hash_2n_n_mask_4x(tree+(127)*HASH_BYTES,tree+(255)*HASH_BYTES,64*HASH_BYTES,masks+16*HASH_BYTES);
   // Hash from level 9 to 10
-  loop_hash_2n_n_mask_8x(tree+(63)*HASH_BYTES,tree+(127)*HASH_BYTES,16*HASH_BYTES,masks+18*HASH_BYTES);
+  loop_hash_2n_n_mask_4x(tree+(63)*HASH_BYTES,tree+(127)*HASH_BYTES,32*HASH_BYTES,masks+18*HASH_BYTES);
   // Hash from level 10 to 11
-  loop_hash_2n_n_mask_8x(tree+(31)*HASH_BYTES,tree+(63)*HASH_BYTES,8*HASH_BYTES,masks+20*HASH_BYTES);
+  loop_hash_2n_n_mask_4x(tree+(31)*HASH_BYTES,tree+(63)*HASH_BYTES,16*HASH_BYTES,masks+20*HASH_BYTES);
   // Hash from level 11 to 12
-  loop_hash_2n_n_mask_8x(tree+(15)*HASH_BYTES,tree+(31)*HASH_BYTES,4*HASH_BYTES,masks+22*HASH_BYTES);
+  loop_hash_2n_n_mask_4x(tree+(15)*HASH_BYTES,tree+(31)*HASH_BYTES,8*HASH_BYTES,masks+22*HASH_BYTES);
   // Hash from level 12 to 13
-  loop_hash_2n_n_mask_8x(tree+(7)*HASH_BYTES,tree+(15)*HASH_BYTES,2*HASH_BYTES,masks+24*HASH_BYTES);
+  loop_hash_2n_n_mask_4x(tree+(7)*HASH_BYTES,tree+(15)*HASH_BYTES,4*HASH_BYTES,masks+24*HASH_BYTES);
   // Hash from level 13 to 14
   for(j=0;j<4;j++)
     hash_2n_n_mask(tree+(3+j)*HASH_BYTES,tree+(7+2*j)*HASH_BYTES,masks+26*HASH_BYTES);

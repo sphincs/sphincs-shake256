@@ -14,27 +14,34 @@ static void expand_seed(unsigned char outseeds[WOTS_L*HASH_BYTES], const unsigne
 
 
 //XXX: optimize this one!
-static void genfullchain8x(unsigned char *x, const unsigned char *masks)
+static void genfullchain4x(unsigned char *x, const unsigned char *masks)
 {
   int i;
 
   for(i=0; i < WOTS_W-1; i++)
-    hash_n_n_mask_8x(x, x, masks+(i*HASH_BYTES));
+    hash_n_n_mask_4x(x, x, masks+(i*HASH_BYTES));
 }
 
 static void gen_fullchains(unsigned char x[WOTS_L*HASH_BYTES], const unsigned char masks[(WOTS_W-1)*HASH_BYTES])
 {
   int i, j;
 
-  genfullchain8x(x, masks);
-  genfullchain8x(x+ 8*HASH_BYTES, masks);
-  genfullchain8x(x+16*HASH_BYTES, masks);
-  genfullchain8x(x+24*HASH_BYTES, masks);
-
-  genfullchain8x(x+32*HASH_BYTES, masks);
-  genfullchain8x(x+40*HASH_BYTES, masks);
-  genfullchain8x(x+48*HASH_BYTES, masks);
-  genfullchain8x(x+56*HASH_BYTES, masks);
+  genfullchain4x(x, masks);
+  genfullchain4x(x+ 4*HASH_BYTES, masks);
+  genfullchain4x(x+ 8*HASH_BYTES, masks);
+  genfullchain4x(x+12*HASH_BYTES, masks);
+  genfullchain4x(x+16*HASH_BYTES, masks);
+  genfullchain4x(x+20*HASH_BYTES, masks);
+  genfullchain4x(x+24*HASH_BYTES, masks);
+  genfullchain4x(x+28*HASH_BYTES, masks);
+  genfullchain4x(x+32*HASH_BYTES, masks);
+  genfullchain4x(x+36*HASH_BYTES, masks);
+  genfullchain4x(x+40*HASH_BYTES, masks);
+  genfullchain4x(x+44*HASH_BYTES, masks);
+  genfullchain4x(x+48*HASH_BYTES, masks);
+  genfullchain4x(x+52*HASH_BYTES, masks);
+  genfullchain4x(x+56*HASH_BYTES, masks);
+  genfullchain4x(x+60*HASH_BYTES, masks);
 
   for(i=64;i<WOTS_L;i++)
     for(j=0; j < WOTS_W-1; j++)
@@ -136,15 +143,15 @@ void wots_verify(unsigned char pk[WOTS_L*HASH_BYTES], const unsigned char sig[WO
     c >>= 4;
   }
 
-  // as much as possible 8 times parallel
-  for(i=0; (i+8) < WOTS_L; i+=8)
+  // as much as possible 4 times parallel
+  for(i=0; (i+4) < WOTS_L; i+=4)
   {
-    memcpy(tmp, sig+i*HASH_BYTES, 8*HASH_BYTES);
+    memcpy(tmp, sig+i*HASH_BYTES, 4*HASH_BYTES);
 
-    int cnt = (1 << 8) - 1;
+    int cnt = (1 << 4) - 1;
 
     // remove basew == 0 cases
-    for (k = 0; k < 8; k++)
+    for (k = 0; k < 4; k++)
       if (0 == WOTS_W-1-basew[i+k])
       {
         memcpy(pk+(i+k)*HASH_BYTES, tmp+k*HASH_BYTES, HASH_BYTES);
@@ -153,16 +160,16 @@ void wots_verify(unsigned char pk[WOTS_L*HASH_BYTES], const unsigned char sig[WO
 
     for(j=0; (j < WOTS_W) & (cnt > 0); )
     {
-      for (k = 0; k < 8; k++)
+      for (k = 0; k < 4; k++)
         if (cnt & (1 << k))
           for (l = 0; l < 32; l++)
             tmp[l + k*HASH_BYTES] ^= (masks+(basew[i+k]*HASH_BYTES)+(j*HASH_BYTES))[l];
 
-      hash_n_n_8x(tmp, tmp);
+      hash_n_n_4x(tmp, tmp);
 
       j++;
 
-      for (k = 0; k < 8; k++)
+      for (k = 0; k < 4; k++)
         if (j == WOTS_W-1-basew[i+k])// | (j == WOTS_W))
         {
           memcpy(pk+(i+k)*HASH_BYTES, tmp+k*HASH_BYTES, HASH_BYTES);
