@@ -1,2 +1,0 @@
-#define crypto_stream_chacha12_e_ref_KEYBYTES 32
-#define crypto_stream_chacha12_e_ref_NONCEBYTES 8
